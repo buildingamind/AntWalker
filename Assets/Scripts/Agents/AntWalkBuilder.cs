@@ -154,6 +154,7 @@ public class AntWalkBuilder : MonoBehaviour
     private bool randomPointReturning = false;
     private int randomPointHoldCounter = 0;
     private Vector3 randomPointTarget;
+    private Vector3 randomPointPrevious; // last visited random point (or the nest, on the segment's first hop)
 
     // pirouette state
     private int pirouetteStep = 0;
@@ -169,6 +170,7 @@ public class AntWalkBuilder : MonoBehaviour
     {
         Random.InitState(seed);
         home = GetHome();
+        randomPointPrevious = home;
     }
 
     Vector3 GetHome()
@@ -626,6 +628,7 @@ public class AntWalkBuilder : MonoBehaviour
         randomPointArrived = false;
         randomPointReturning = false;
         randomPointHoldCounter = 0;
+        randomPointPrevious = home;
         segmentIndex++;
 
         if (segmentIndex >= playlist.Count)
@@ -662,11 +665,14 @@ public class AntWalkBuilder : MonoBehaviour
 
             if (seg.teleport)
             {
-                // A teleport skips the turn-while-walking that normally orients the agent,
-                // so face the hop's direction of travel outright instead of leaving it
-                // pointed wherever it was facing before the jump.
-                FaceDirection(randomPointTarget - transform.position);
+                // A teleport skips the turn-while-walking that normally orients the agent, so
+                // face the hop's direction of travel outright instead of leaving it pointed
+                // wherever it was facing before the jump. Face from the *previous* random point
+                // (not transform.position, which the prior hop's return leg already snapped to
+                // the nest) so consecutive hops read as point-to-point, not radiating from home.
+                FaceDirection(randomPointTarget - randomPointPrevious);
                 transform.position = randomPointTarget;
+                randomPointPrevious = randomPointTarget;
             }
         }
 
