@@ -4,18 +4,25 @@ using UnityEngine;
 
 public class TimescaleManager : MonoBehaviour
 {
+    [Tooltip("Timescale used in the Editor, or in a Build when no --timescale argument was passed.")]
     public int EditorTimescale = 1;
 
-    // Update is called once per frame
+    void Start()
+    {
+        Time.timeScale = (Application.isEditor || ArgumentParser.Options.timescale == 0)
+            ? EditorTimescale
+            : ArgumentParser.Options.timescale;
+    }
+
+    // F1-F12 -> Time.timeScale 1-12, in both the Editor and a Build.
     void Update()
     {
-        if (Application.isEditor || ArgumentParser.Options.timescale == 0)
+        for (int i = 1; i <= 12; i++)
         {
-            Time.timeScale = EditorTimescale;
-        }
-        else
-        {
-            Time.timeScale = ArgumentParser.Options.timescale;
+            if (Input.GetKeyDown(KeyCode.F1 + (i - 1)))
+            {
+                Time.timeScale = i;
+            }
         }
     }
 }

@@ -19,11 +19,11 @@ public class AntWalkBuilder : MonoBehaviour
 {
     public enum WalkType
     {
-        StraightOutAndBack, // Out along a direction for `distance`, then straight back.
-        RandomTeleport,     // Hard-teleport to random points within a disk tangent to the nest (no smooth motion, no detours).
+        Line,               // Out along a direction for `distance`, then return per lineReturnMode.
         FullLoop,           // A single full loop in front of the nest, returning to it.
-        HalfLoop,           // Out along half the loop's arc, then back the same arc, returning to it.
-        Spiral              // Spiral out from the nest to loopDiameter/2 radius, then return per spiralReturnMode.
+        HalfLoop,           // Out along half the loop's arc, then return per halfLoopReturnMode.
+        Spiral,             // Spiral out from the nest to loopDiameter/2, then return per spiralReturnMode.
+        RandomPoint         // Visit random points within a disk tangent to the nest, teleporting or walking per `teleport`.
     }
 
     public enum LoopDirection
@@ -33,27 +33,37 @@ public class AntWalkBuilder : MonoBehaviour
         Random
     }
 
-    public enum SpiralReturnMode
+    public enum LineReturnMode
     {
-        ReverseReturn,  // Spiral back inward along the same coiled path it went out on.
-        StraightReturn, // Straight line from the outermost point directly back to the nest.
-        TeleportReturn  // Hard-teleport back to the nest once the outermost point is reached.
+        ReverseReturn,  // Walk back along the same line.
+        TeleportReturn  // Hard-teleport back to the nest once the far point is reached.
+    }
+
+    /// <summary>Shared by Half Loop and Spiral, whose outbound leg ends at a turnaround point some
+    /// distance from the nest.</summary>
+    public enum ReturnMode
+    {
+        ReverseReturn,  // Retrace the same arc/coil back to the nest.
+        DirectReturn,   // Straight line from the turnaround point directly back to the nest.
+        TeleportReturn  // Hard-teleport back to the nest once the turnaround point is reached.
     }
 
     [System.Serializable]
     public class PathDefinition
     {
-        public WalkType type = WalkType.StraightOutAndBack;
+        public WalkType type = WalkType.Line;
 
-        [Tooltip("How many times to perform this walk before advancing to the next segment. For RandomTeleport this is the number of teleport hops.")]
+        [Tooltip("How many times to perform this walk before advancing to the next segment. For Random Point this is the number of points visited.")]
         public int repeats = 1;
 
         [Tooltip("[All types] Heading in degrees (yaw) the walk points away from the nest.")]
         public float directionAngle = 0f;
 
-        [Header("Straight Out & Back")]
-        [Tooltip("[Straight] Distance out from the nest before turning back.")]
+        [Header("Line")]
+        [Tooltip("[Line] Distance out from the nest before turning back.")]
         public float distance = 10f;
+        [Tooltip("[Line] How the ant gets back to the nest after reaching the far point.")]
+        public LineReturnMode lineReturnMode = LineReturnMode.ReverseReturn;
 
         [Header("Full Loop / Half Loop / Spiral")]
         [Tooltip("[Loop/Half Loop] Diameter of the loop performed in front of the nest. [Spiral] Diameter of the outermost coil, centred on the nest.")]
@@ -61,16 +71,22 @@ public class AntWalkBuilder : MonoBehaviour
         [Tooltip("[Loop/Half Loop/Spiral] Direction of travel around the loop.")]
         public LoopDirection loopDirection = LoopDirection.Random;
 
+        [Header("Half Loop")]
+        [Tooltip("[Half Loop] How the ant gets back to the nest after reaching the halfway point.")]
+        public ReturnMode halfLoopReturnMode = ReturnMode.ReverseReturn;
+
         [Header("Spiral")]
         [Tooltip("[Spiral] Number of coils the spiral winds through going out (and again coming back, if the return mode retraces it). Higher values coil tighter for the same diameter.")]
         public float spiralTurns = 3f;
-        [Tooltip("[Spiral] How the ant gets back to the nest after reaching the spiral's outermost point.")]
-        public SpiralReturnMode spiralReturnMode = SpiralReturnMode.ReverseReturn;
+        [Tooltip("[Spiral] How the ant gets back to the nest after reaching the spiral's innermost point.")]
+        public ReturnMode spiralReturnMode = ReturnMode.ReverseReturn;
 
-        [Header("Random Teleport")]
-        [Tooltip("[Teleport] Diameter of the region (tangent to the nest, same placement as Full Loop) to teleport within.")]
+        [Header("Random Point")]
+        [Tooltip("[Random Point] If true, hard-teleport instantly to the chosen point and back. If false, walk both legs at moveSpeed.")]
+        public bool teleport = true;
+        [Tooltip("[Random Point] Diameter of the region (tangent to the nest, same placement as Full Loop) to pick points within.")]
         public float teleportDiameter = 40f;
-        [Tooltip("[Teleport] How many FixedUpdates to hold each teleport position before the next hop.")]
+        [Tooltip("[Random Point] How many FixedUpdates to hold each chosen position before returning to the nest.")]
         public int holdDuration = 10;
     }
 
@@ -132,9 +148,12 @@ public class AntWalkBuilder : MonoBehaviour
     // Once facing within this many degrees of the path tangent, movement is allowed to resume.
     private const float TurnFacingToleranceDegrees = 3f;
 
-    // teleport state
-    private bool teleportPlaced = false;
-    private int teleportHoldCounter = 0;
+    // random point state
+    private bool randomPointPlaced = false;
+    private bool randomPointArrived = false;
+    private bool randomPointReturning = false;
+    private int randomPointHoldCounter = 0;
+    private Vector3 randomPointTarget;
 
     // pirouette state
     private int pirouetteStep = 0;
@@ -159,8 +178,6 @@ public class AntWalkBuilder : MonoBehaviour
 
     void FixedUpdate()
     {
-        HandleTimescaleKeys();
-
         if (playlist == null || playlist.Count == 0)
         {
             return;
@@ -175,10 +192,10 @@ public class AntWalkBuilder : MonoBehaviour
         PathDefinition seg = playlist[segmentIndex];
         currentType = seg.type;
 
-        if (seg.type == WalkType.RandomTeleport)
+        if (seg.type == WalkType.RandomPoint)
         {
-            // No smooth motion, and no pirouettes or voltes during teleport segments.
-            UpdateTeleport(seg);
+            // No pirouettes or voltes while visiting random points, whether teleporting or walking.
+            UpdateRandomPoint(seg);
         }
         else
         {
@@ -240,12 +257,25 @@ public class AntWalkBuilder : MonoBehaviour
             BeginPath(seg);
         }
 
-        // Turn on the spot to face the upcoming direction before moving, so a sharp
-        // turn (e.g. the out-and-back turnaround) doesn't slide the agent sideways
-        // or backwards while it's still rotating.
-        if (!FaceTangent(PathTangent(seg, pathDistance)))
+        Vector3 tangent = PathTangent(seg, pathDistance);
+
+        if (seg.type == WalkType.Line)
         {
-            return;
+            // Line's turnaround is an instant 180 deg flip, so fully face the new
+            // direction before moving -- otherwise the agent slides sideways or
+            // backwards while it's still rotating into the reversed heading.
+            if (!FaceTangent(tangent))
+            {
+                return;
+            }
+        }
+        else
+        {
+            // Every other walk curves continuously (no instant reversal), so the
+            // heading only ever lags the tangent by a small, gradually-changing amount.
+            // Gating movement on that would stall tight loops/spirals as their internal
+            // angle steepens, so just turn and move in the same step instead.
+            RotateTowardTangent(tangent);
         }
 
         pathDistance += moveSpeed * Time.deltaTime;
@@ -255,10 +285,10 @@ public class AntWalkBuilder : MonoBehaviour
             // Snap exactly to the end of the path (back at the nest) and complete a repeat.
             SetPathPosition(seg, currentPathLength);
 
-            if (seg.type == WalkType.Spiral && seg.spiralReturnMode == SpiralReturnMode.TeleportReturn)
+            if (IsTeleportReturn(seg))
             {
                 // The path only covers the outbound leg; hop straight back to the nest
-                // instead of walking, the same way RandomTeleport moves between hops.
+                // instead of walking, the same way Random Point's teleport hops do.
                 transform.position = new Vector3(home.x, transform.position.y, home.z);
             }
 
@@ -292,6 +322,18 @@ public class AntWalkBuilder : MonoBehaviour
         transform.position = new Vector3(home.x + off.x, transform.position.y, home.z + off.z);
     }
 
+    /// <summary>Eases the rotation toward <paramref name="tangent"/>, without gating movement.</summary>
+    void RotateTowardTangent(Vector3 tangent)
+    {
+        if (tangent.sqrMagnitude <= 1e-6f)
+        {
+            return;
+        }
+
+        Quaternion target = Quaternion.LookRotation(tangent.normalized);
+        transform.rotation = Quaternion.Slerp(transform.rotation, target, 0.2f);
+    }
+
     /// <summary>Eases the rotation toward <paramref name="tangent"/>. Returns true once facing it closely enough to move.</summary>
     bool FaceTangent(Vector3 tangent)
     {
@@ -301,8 +343,19 @@ public class AntWalkBuilder : MonoBehaviour
         }
 
         Quaternion target = Quaternion.LookRotation(tangent.normalized);
-        transform.rotation = Quaternion.Slerp(transform.rotation, target, 0.2f);
+        RotateTowardTangent(tangent);
         return Quaternion.Angle(transform.rotation, target) < TurnFacingToleranceDegrees;
+    }
+
+    /// <summary>Snaps rotation to face <paramref name="direction"/> outright, no easing -- for
+    /// teleport hops, which have no in-between frames for <see cref="RotateTowardTangent"/> to ease across.</summary>
+    void FaceDirection(Vector3 direction)
+    {
+        direction.y = 0f;
+        if (direction.sqrMagnitude > 1e-6f)
+        {
+            transform.rotation = Quaternion.LookRotation(direction.normalized);
+        }
     }
 
     /// <summary>Offset (in the nest-local XZ plane, y = 0) of the path at arc length <paramref name="s"/>.</summary>
@@ -310,10 +363,14 @@ public class AntWalkBuilder : MonoBehaviour
     {
         switch (seg.type)
         {
-            case WalkType.StraightOutAndBack:
+            case WalkType.Line:
             {
                 Vector3 dir = HeadingVector(seg.directionAngle);
                 float d = Mathf.Max(0.0001f, seg.distance);
+                if (seg.lineReturnMode == LineReturnMode.TeleportReturn)
+                {
+                    return dir * Mathf.Min(s, d);
+                }
                 return s <= d ? dir * s : dir * (2f * d - s);
             }
             case WalkType.FullLoop:
@@ -323,18 +380,25 @@ public class AntWalkBuilder : MonoBehaviour
                 return LoopOffset(seg, theta, cw);
             }
             case WalkType.HalfLoop:
-            {
-                // Out along half the loop's arc (180 deg), then back the same arc, mirroring
-                // StraightOutAndBack but curved.
-                float r = Mathf.Max(0.0001f, seg.loopDiameter * 0.5f);
-                float halfArcLength = Mathf.PI * r;
-                float theta = s <= halfArcLength ? (s / r) : ((2f * halfArcLength - s) / r);
-                return LoopOffset(seg, theta, cw);
-            }
+                return HalfLoopOffset(seg, s, cw);
             case WalkType.Spiral:
                 return SpiralOffset(seg, s, cw);
             default:
                 return Vector3.zero;
+        }
+    }
+
+    /// <summary>Static per-segment check for whether the path's return leg is a teleport hop rather
+    /// than something <see cref="PathOffset"/> walks -- used both to snap the agent home once the
+    /// outbound leg completes, and to skip drawing a return line in the gizmo.</summary>
+    static bool IsTeleportReturn(PathDefinition seg)
+    {
+        switch (seg.type)
+        {
+            case WalkType.Line: return seg.lineReturnMode == LineReturnMode.TeleportReturn;
+            case WalkType.HalfLoop: return seg.halfLoopReturnMode == ReturnMode.TeleportReturn;
+            case WalkType.Spiral: return seg.spiralReturnMode == ReturnMode.TeleportReturn;
+            default: return false;
         }
     }
 
@@ -351,10 +415,44 @@ public class AntWalkBuilder : MonoBehaviour
     }
 
     /// <summary>
+    /// Out along half the loop's arc (180 deg) from the nest, then returns to the nest via
+    /// <see cref="PathDefinition.halfLoopReturnMode"/>. TeleportReturn's return leg isn't part of
+    /// this offset function at all -- AdvancePath snaps the position directly once the outbound
+    /// leg completes, the same way Random Point's teleport hops do.
+    /// </summary>
+    Vector3 HalfLoopOffset(PathDefinition seg, float s, bool cw)
+    {
+        float r = Mathf.Max(0.0001f, seg.loopDiameter * 0.5f);
+        float halfArcLength = Mathf.PI * r;
+
+        switch (seg.halfLoopReturnMode)
+        {
+            case ReturnMode.DirectReturn:
+            {
+                if (s <= halfArcLength)
+                {
+                    return LoopOffset(seg, s / r, cw);
+                }
+                Vector3 apex = LoopOffset(seg, Mathf.PI, cw); // farthest point, diametrically opposite the nest
+                float returnT = Mathf.Clamp01((s - halfArcLength) / (2f * r));
+                return Vector3.Lerp(apex, Vector3.zero, returnT);
+            }
+            case ReturnMode.TeleportReturn:
+                return LoopOffset(seg, Mathf.Min(s, halfArcLength) / r, cw);
+            case ReturnMode.ReverseReturn:
+            default:
+            {
+                float theta = s <= halfArcLength ? (s / r) : ((2f * halfArcLength - s) / r);
+                return LoopOffset(seg, theta, cw);
+            }
+        }
+    }
+
+    /// <summary>
     /// Spirals out from the nest to loopDiameter/2, coiling spiralTurns times, then returns to the
     /// nest via <see cref="PathDefinition.spiralReturnMode"/>. TeleportReturn's return leg isn't part
     /// of this offset function at all -- AdvancePath snaps the position directly once the outbound
-    /// leg completes, the same way RandomTeleport does.
+    /// leg completes, the same way Random Point's teleport hops do.
     /// </summary>
     Vector3 SpiralOffset(PathDefinition seg, float s, bool cw)
     {
@@ -363,77 +461,139 @@ public class AntWalkBuilder : MonoBehaviour
 
         switch (seg.spiralReturnMode)
         {
-            case SpiralReturnMode.StraightReturn:
+            case ReturnMode.DirectReturn:
             {
                 if (s <= outLength)
                 {
-                    return SpiralPoint(seg, Mathf.Clamp01(s / outLength), cw);
+                    return SpiralPoint(seg, SpiralParamAtArcLength(seg, s), cw);
                 }
                 Vector3 outEnd = SpiralPoint(seg, 1f, cw);
                 float returnT = Mathf.Clamp01((s - outLength) / maxR);
                 return Vector3.Lerp(outEnd, Vector3.zero, returnT);
             }
-            case SpiralReturnMode.TeleportReturn:
-                return SpiralPoint(seg, Mathf.Clamp01(s / outLength), cw);
-            case SpiralReturnMode.ReverseReturn:
+            case ReturnMode.TeleportReturn:
+                return SpiralPoint(seg, SpiralParamAtArcLength(seg, s), cw);
+            case ReturnMode.ReverseReturn:
             default:
             {
-                float t = s <= outLength ? s / outLength : (2f * outLength - s) / outLength;
-                return SpiralPoint(seg, Mathf.Clamp01(t), cw);
+                float target = s <= outLength ? s : (2f * outLength - s);
+                return SpiralPoint(seg, SpiralParamAtArcLength(seg, target), cw);
             }
         }
     }
 
-    /// <summary>Position along the spiral's outbound leg at progress <paramref name="t"/> (0 = nest, 1 = outermost point).
-    /// Radius and angle both scale linearly with t, so it isn't a true constant-speed arc-length
-    /// parametrisation, but it's smooth and simple.</summary>
+    /// <summary>Position along the spiral's outbound leg at progress <paramref name="t"/> (0 = nest, 1 = the
+    /// coil's innermost point, loopDiameter/2 straight ahead). The coil is centred like Full Loop's circle
+    /// (tangent to the nest) rather than centred on the nest, so the ant departs tangentially -- same as a
+    /// loop -- and winds inward as it travels out and away instead of uncoiling from a standstill at the nest.
+    /// Radius and angle both scale linearly with t, so t itself isn't a constant-speed arc-length parameter
+    /// (motion bunches up near the tightly-coiled centre, where r is small but theta keeps sweeping at the
+    /// same rate) -- callers needing constant speed should convert a target distance to t via
+    /// <see cref="SpiralParamAtArcLength"/> rather than dividing by the leg length directly.</summary>
     Vector3 SpiralPoint(PathDefinition seg, float t, bool cw)
     {
         float maxR = Mathf.Max(0.0001f, seg.loopDiameter * 0.5f);
         float totalTheta = Mathf.Max(0.0001f, seg.spiralTurns) * 2f * Mathf.PI;
         float theta = t * totalTheta;
-        float r = t * maxR;
+        float r = (1f - t) * maxR;
         float sign = cw ? -1f : 1f;
-        Vector3 dir = Quaternion.AngleAxis(sign * theta * Mathf.Rad2Deg, Vector3.up) * HeadingVector(seg.directionAngle);
-        return dir * r;
+        Vector3 front = HeadingVector(seg.directionAngle);
+        Vector3 center = front * maxR;
+        Vector3 rel = Quaternion.AngleAxis(sign * theta * Mathf.Rad2Deg, Vector3.up) * -front;
+        return center + rel * r;
     }
 
-    /// <summary>Arc length of one spiral leg (nest to outermost point), found by sampling since the
-    /// spiral's radius/angle relationship isn't a closed form we need to keep readable.</summary>
-    static float SpiralLegLength(PathDefinition seg)
+    /// <summary>Antiderivative of sqrt(1 + k^2*v^2), the integrand for the spiral's arc length (its radius is
+    /// linear in angle, i.e. an Archimedean spiral, which is what makes this closed form apply). Used by
+    /// <see cref="SpiralArcLength"/> to turn that integral into a plain evaluation instead of a numeric sum.</summary>
+    static float SpiralArcLengthAntiderivative(float v, float k)
+    {
+        float kv = k * v;
+        float root = Mathf.Sqrt(1f + kv * kv);
+        return 0.5f * v * root + Mathf.Log(kv + root) / (2f * k);
+    }
+
+    /// <summary>Arc length of the spiral's outbound leg from the nest (SpiralPoint's t = 0) up to progress
+    /// <paramref name="t"/>, in closed form rather than by sampling.</summary>
+    static float SpiralArcLength(PathDefinition seg, float t)
     {
         float maxR = Mathf.Max(0.0001f, seg.loopDiameter * 0.5f);
-        float totalTheta = Mathf.Max(0.0001f, seg.spiralTurns) * 2f * Mathf.PI;
+        float k = Mathf.Max(0.0001f, seg.spiralTurns) * 2f * Mathf.PI;
+        return maxR * (SpiralArcLengthAntiderivative(1f, k) - SpiralArcLengthAntiderivative(1f - t, k));
+    }
 
-        const int samples = 32;
-        float length = 0f;
-        Vector3 prev = Vector3.zero;
-        for (int i = 1; i <= samples; i++)
+    /// <summary>Instantaneous speed (d(arc length)/dt) of SpiralPoint at progress <paramref name="t"/> -- i.e.
+    /// how much slower than <see cref="SpiralArcLength"/>'s average rate the curve moves per unit t here. Used
+    /// as the Newton-Raphson slope in <see cref="SpiralParamAtArcLength"/> to invert arc length back to t.</summary>
+    static float SpiralLocalSpeed(PathDefinition seg, float t)
+    {
+        float maxR = Mathf.Max(0.0001f, seg.loopDiameter * 0.5f);
+        float k = Mathf.Max(0.0001f, seg.spiralTurns) * 2f * Mathf.PI;
+        float oneMinusT = 1f - t;
+        return maxR * Mathf.Sqrt(1f + k * k * oneMinusT * oneMinusT);
+    }
+
+    /// <summary>Total arc length of one spiral leg (nest to the coil's innermost point).</summary>
+    static float SpiralLegLength(PathDefinition seg)
+    {
+        return SpiralArcLength(seg, 1f);
+    }
+
+    /// <summary>Converts a target arc-length distance along the spiral's outbound leg into the SpiralPoint
+    /// parameter t that actually reaches that distance, correcting for SpiralPoint's t not being a
+    /// constant-speed parametrisation (see its doc comment). Inverts the closed-form <see cref="SpiralArcLength"/>
+    /// with a few Newton-Raphson iterations (using <see cref="SpiralLocalSpeed"/> as the slope) starting from the
+    /// linear guess, which converges in a handful of steps and stays smooth across the whole leg -- no sampled
+    /// polyline, so no piecewise-linear seams in the resulting speed.
+    /// <paramref name="targetS"/> beyond the leg's length clamps to t = 1 (and values below zero to t = 0).</summary>
+    static float SpiralParamAtArcLength(PathDefinition seg, float targetS)
+    {
+        float total = SpiralLegLength(seg);
+        if (targetS <= 0f) return 0f;
+        if (targetS >= total) return 1f;
+
+        float t = targetS / total;
+        for (int i = 0; i < 5; i++)
         {
-            float t = i / (float)samples;
-            float theta = t * totalTheta;
-            float r = t * maxR;
-            Vector3 cur = new Vector3(Mathf.Cos(theta), 0f, Mathf.Sin(theta)) * r;
-            length += Vector3.Distance(prev, cur);
-            prev = cur;
+            float error = SpiralArcLength(seg, t) - targetS;
+            float slope = SpiralLocalSpeed(seg, t);
+            t = Mathf.Clamp01(t - error / slope);
         }
-        return length;
+        return t;
     }
 
     float SegmentLength(PathDefinition seg)
     {
         switch (seg.type)
         {
-            case WalkType.StraightOutAndBack:
-                return 2f * Mathf.Max(0.0001f, seg.distance);
+            case WalkType.Line:
+                return seg.lineReturnMode == LineReturnMode.TeleportReturn
+                    ? Mathf.Max(0.0001f, seg.distance)
+                    : 2f * Mathf.Max(0.0001f, seg.distance);
             case WalkType.FullLoop:
                 return Mathf.PI * Mathf.Max(0.0001f, seg.loopDiameter);
             case WalkType.HalfLoop:
-                return Mathf.PI * Mathf.Max(0.0001f, seg.loopDiameter); // half the arc, out and back
+                return HalfLoopSegmentLength(seg);
             case WalkType.Spiral:
                 return SpiralSegmentLength(seg);
             default:
                 return 0f;
+        }
+    }
+
+    static float HalfLoopSegmentLength(PathDefinition seg)
+    {
+        float r = Mathf.Max(0.0001f, seg.loopDiameter * 0.5f);
+        float halfArcLength = Mathf.PI * r;
+        switch (seg.halfLoopReturnMode)
+        {
+            case ReturnMode.DirectReturn:
+                return halfArcLength + 2f * r; // + straight line back across the diameter
+            case ReturnMode.TeleportReturn:
+                return halfArcLength; // return leg is an instant snap, not part of the path
+            case ReturnMode.ReverseReturn:
+            default:
+                return 2f * halfArcLength; // out, then back the same arc
         }
     }
 
@@ -442,11 +602,11 @@ public class AntWalkBuilder : MonoBehaviour
         float outLength = SpiralLegLength(seg);
         switch (seg.spiralReturnMode)
         {
-            case SpiralReturnMode.StraightReturn:
+            case ReturnMode.DirectReturn:
                 return outLength + Mathf.Max(0.0001f, seg.loopDiameter * 0.5f); // + straight line back
-            case SpiralReturnMode.TeleportReturn:
+            case ReturnMode.TeleportReturn:
                 return outLength; // return leg is an instant snap, not part of the path
-            case SpiralReturnMode.ReverseReturn:
+            case ReturnMode.ReverseReturn:
             default:
                 return 2f * outLength; // out, then back the same way
         }
@@ -462,8 +622,10 @@ public class AntWalkBuilder : MonoBehaviour
         repeatCount = 0;
         currentPathLength = 0f;
         pathDistance = 0f;
-        teleportPlaced = false;
-        teleportHoldCounter = 0;
+        randomPointPlaced = false;
+        randomPointArrived = false;
+        randomPointReturning = false;
+        randomPointHoldCounter = 0;
         segmentIndex++;
 
         if (segmentIndex >= playlist.Count)
@@ -479,12 +641,12 @@ public class AntWalkBuilder : MonoBehaviour
     }
 
     // ------------------------------------------------------------------
-    // Random teleport
+    // Random point
     // ------------------------------------------------------------------
 
-    void UpdateTeleport(PathDefinition seg)
+    void UpdateRandomPoint(PathDefinition seg)
     {
-        if (!teleportPlaced)
+        if (!randomPointPlaced)
         {
             // Same tangent-to-the-nest placement as Full Loop: a disk of teleportDiameter
             // centred directionAngle-forward, touching the nest at its near edge.
@@ -493,23 +655,91 @@ public class AntWalkBuilder : MonoBehaviour
             Vector2 offset = Random.insideUnitCircle * radius;
             Vector3 point = center + new Vector3(offset.x, 0f, offset.y);
 
-            transform.position = new Vector3(home.x + point.x, transform.position.y, home.z + point.z);
-            teleportHoldCounter = 0;
-            teleportPlaced = true;
-        }
+            randomPointTarget = new Vector3(home.x + point.x, transform.position.y, home.z + point.z);
+            randomPointPlaced = true;
+            randomPointArrived = seg.teleport;
+            randomPointReturning = false;
 
-        teleportHoldCounter++;
-
-        if (teleportHoldCounter >= Mathf.Max(1, seg.holdDuration))
-        {
-            repeatCount++;
-            teleportPlaced = false;
-
-            if (repeatCount >= Mathf.Max(1, seg.repeats))
+            if (seg.teleport)
             {
-                AdvanceSegment();
+                // A teleport skips the turn-while-walking that normally orients the agent,
+                // so face the hop's direction of travel outright instead of leaving it
+                // pointed wherever it was facing before the jump.
+                FaceDirection(randomPointTarget - transform.position);
+                transform.position = randomPointTarget;
             }
         }
+
+        if (!randomPointArrived)
+        {
+            if (WalkTowards(randomPointTarget))
+            {
+                randomPointArrived = true;
+            }
+            return;
+        }
+
+        if (!randomPointReturning)
+        {
+            randomPointHoldCounter++;
+            if (randomPointHoldCounter < Mathf.Max(1, seg.holdDuration))
+            {
+                return;
+            }
+
+            randomPointHoldCounter = 0;
+
+            if (seg.teleport)
+            {
+                Vector3 nest = new Vector3(home.x, transform.position.y, home.z);
+                FaceDirection(nest - transform.position);
+                transform.position = nest;
+                CompleteRandomPointHop(seg);
+                return;
+            }
+
+            randomPointReturning = true;
+            return;
+        }
+
+        // Walking back to the nest.
+        if (WalkTowards(new Vector3(home.x, transform.position.y, home.z)))
+        {
+            CompleteRandomPointHop(seg);
+        }
+    }
+
+    void CompleteRandomPointHop(PathDefinition seg)
+    {
+        repeatCount++;
+        randomPointPlaced = false;
+        randomPointArrived = false;
+        randomPointReturning = false;
+
+        if (repeatCount >= Mathf.Max(1, seg.repeats))
+        {
+            AdvanceSegment();
+        }
+    }
+
+    /// <summary>Turns to face and steps toward <paramref name="target"/> at moveSpeed. Returns true once
+    /// it has arrived (and snapped exactly to the target).</summary>
+    bool WalkTowards(Vector3 target)
+    {
+        Vector3 toTarget = target - transform.position;
+        toTarget.y = 0f;
+
+        RotateTowardTangent(toTarget);
+
+        float step = moveSpeed * Time.deltaTime;
+        if (toTarget.magnitude <= step)
+        {
+            transform.position = target;
+            return true;
+        }
+
+        transform.position += toTarget.normalized * step;
+        return false;
     }
 
     // ------------------------------------------------------------------
@@ -586,21 +816,6 @@ public class AntWalkBuilder : MonoBehaviour
     }
 
     // ------------------------------------------------------------------
-    // Timescale hotkeys (F1-F12 -> Time.timeScale 1-12)
-    // ------------------------------------------------------------------
-
-    void HandleTimescaleKeys()
-    {
-        for (int i = 1; i <= 12; i++)
-        {
-            if (Input.GetKeyDown(KeyCode.F1 + (i - 1)))
-            {
-                Time.timeScale = i;
-            }
-        }
-    }
-
-    // ------------------------------------------------------------------
     // Status overlay (Game view)
     // ------------------------------------------------------------------
 
@@ -649,9 +864,9 @@ public class AntWalkBuilder : MonoBehaviour
     // ------------------------------------------------------------------
 
     // Bright versions of the same hues used to tint each walk type in the Inspector.
-    static readonly Color StraightGizmoColor = new Color(0.3f, 0.55f, 1f);
+    static readonly Color LineGizmoColor = new Color(0.3f, 0.55f, 1f);
     static readonly Color LoopGizmoColor = new Color(0.3f, 1f, 0.3f);
-    static readonly Color TeleportGizmoColor = new Color(0.9f, 0.4f, 1f);
+    static readonly Color RandomPointGizmoColor = new Color(0.9f, 0.4f, 1f);
     static readonly Color HalfLoopGizmoColor = new Color(1f, 0.85f, 0.2f);
     static readonly Color SpiralGizmoColor = new Color(1f, 0.45f, 0.15f);
     static readonly Color HomeMarkerColor = new Color(0.6f, 0.1f, 0.1f);
@@ -660,9 +875,9 @@ public class AntWalkBuilder : MonoBehaviour
     {
         switch (type)
         {
-            case WalkType.StraightOutAndBack: return StraightGizmoColor;
+            case WalkType.Line: return LineGizmoColor;
             case WalkType.FullLoop: return LoopGizmoColor;
-            case WalkType.RandomTeleport: return TeleportGizmoColor;
+            case WalkType.RandomPoint: return RandomPointGizmoColor;
             case WalkType.HalfLoop: return HalfLoopGizmoColor;
             case WalkType.Spiral: return SpiralGizmoColor;
             default: return Color.white;
@@ -671,7 +886,7 @@ public class AntWalkBuilder : MonoBehaviour
 
     void OnDrawGizmos()
     {
-        if (!drawTrajectory || playlist == null)
+        if (!enabled || !drawTrajectory || playlist == null)
         {
             return;
         }
@@ -689,6 +904,20 @@ public class AntWalkBuilder : MonoBehaviour
             // Highlight the active segment by blending toward white rather than losing its hue.
             Gizmos.color = active ? Color.Lerp(color, Color.white, 0.5f) : color;
             DrawSegmentGizmo(seg, h);
+
+            if (active && seg.type == WalkType.RandomPoint && !seg.teleport && randomPointPlaced)
+            {
+                // Mark the chosen point, same marker style as Line's endpoint.
+                Gizmos.color = RandomPointGizmoColor;
+                Gizmos.DrawWireSphere(randomPointTarget, 0.25f);
+
+                if (!randomPointArrived || randomPointReturning)
+                {
+                    // Show the line the agent is currently walking, toward the point or back to the nest.
+                    Vector3 walkTarget = randomPointArrived ? h : randomPointTarget;
+                    Gizmos.DrawLine(transform.position, walkTarget);
+                }
+            }
         }
     }
 
@@ -709,7 +938,7 @@ public class AntWalkBuilder : MonoBehaviour
     {
         switch (seg.type)
         {
-            case WalkType.StraightOutAndBack:
+            case WalkType.Line:
             {
                 Vector3 outPoint = h + HeadingVector(seg.directionAngle) * seg.distance;
                 outPoint.y = h.y;
@@ -736,16 +965,16 @@ public class AntWalkBuilder : MonoBehaviour
                     Gizmos.DrawLine(prev, cur);
                     prev = cur;
                 }
-                if (seg.type == WalkType.Spiral && seg.spiralReturnMode == SpiralReturnMode.TeleportReturn)
+                if (IsTeleportReturn(seg))
                 {
                     // No line is drawn back to the nest for this mode -- mark the jump-off point instead.
                     Gizmos.DrawWireSphere(prev, 0.25f);
                 }
                 break;
             }
-            case WalkType.RandomTeleport:
+            case WalkType.RandomPoint:
             {
-                // Draw the teleport region as a ring tangent to the nest, matching Full Loop's placement.
+                // Draw the region points are chosen from as a ring tangent to the nest, matching Full Loop's placement.
                 int samples = 48;
                 float radius = Mathf.Max(0.0001f, seg.teleportDiameter * 0.5f);
                 Vector3 center = h + HeadingVector(seg.directionAngle) * radius;

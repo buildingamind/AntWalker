@@ -34,7 +34,7 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[0].type
-    value: 2
+    value: 1
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[0].repeats
@@ -49,6 +49,10 @@ Preset:
     value: 0
     objectReference: {fileID: 0}
   - target: {fileID: 0}
+    propertyPath: playlist.Array.data[0].lineReturnMode
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
     propertyPath: playlist.Array.data[0].loopDiameter
     value: 50
     objectReference: {fileID: 0}
@@ -57,11 +61,19 @@ Preset:
     value: 0
     objectReference: {fileID: 0}
   - target: {fileID: 0}
+    propertyPath: playlist.Array.data[0].halfLoopReturnMode
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
     propertyPath: playlist.Array.data[0].spiralTurns
     value: 0
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[0].spiralReturnMode
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: playlist.Array.data[0].teleport
     value: 0
     objectReference: {fileID: 0}
   - target: {fileID: 0}

@@ -121,7 +121,7 @@ public class ProceduralAnimator : MonoBehaviour
     }
 
     // Optional: Visualize the Max Distance of the Joints in the Editor
-    void OnDrawGizmos()
+    void OnDrawGizmosSelected()
     {
         if (leftFoot != null)
         {

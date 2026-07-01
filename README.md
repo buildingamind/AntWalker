@@ -67,20 +67,40 @@ Walk types (selected per-segment from an enum dropdown):
 
 | Walk type            | What it does                                                              | Key parameters                          |
 |----------------------|--------------------------------------------------------------------------|-----------------------------------------|
-| `StraightOutAndBack` | Travels out along a direction, then straight back to the nest.           | `distance`, `directionAngle`            |
+| `Line`               | Travels out along a direction, then returns via `lineReturnMode`.         | `distance`, `directionAngle`, `lineReturnMode` |
 | `FullLoop`           | One full loop in front of the nest, returning to it.                     | `loopDiameter`, `loopDirection` (CW/CCW/Random) |
-| `HalfLoop`           | Out along half the loop's arc (180°), then back the same arc.            | `loopDiameter`, `loopDirection` (CW/CCW/Random) |
+| `HalfLoop`           | Out along half the loop's arc (180°), then returns via `halfLoopReturnMode`. | `loopDiameter`, `loopDirection` (CW/CCW/Random), `halfLoopReturnMode` |
 | `Spiral`             | Spirals out from the nest to `loopDiameter`, then returns via `spiralReturnMode`. | `loopDiameter`, `loopDirection` (CW/CCW/Random), `spiralTurns`, `spiralReturnMode` |
-| `RandomTeleport`     | Hard-teleports to random points within a disk — **no** smooth motion.    | `teleportDiameter`, `holdDuration`       |
+| `RandomPoint`        | Visits random points within a disk, teleporting or walking both legs per `teleport`. | `teleport`, `teleportDiameter`, `holdDuration` |
 
-A spiral's outbound leg always coils out from the nest to `loopDiameter`/2. `spiralReturnMode`
-controls how it gets back:
+A spiral's outbound leg departs the nest tangentially (like `FullLoop`'s circle) and winds inward
+to a point `loopDiameter`/2 straight ahead, so it reads as coiling out and away rather than
+uncoiling in place.
 
-| `spiralReturnMode` | What it does                                                                          |
+`Line`'s turnaround point sits on the same line back to the nest, so it only needs two return
+options:
+
+| `lineReturnMode`    | What it does                                                                          |
 |---------------------|----------------------------------------------------------------------------------------|
-| `ReverseReturn`     | Spirals back inward along the same coiled path it went out on (the default).           |
-| `StraightReturn`    | Walks a straight line from the outermost point directly back to the nest.              |
-| `TeleportReturn`    | Hard-teleports back to the nest the instant the outermost point is reached — **no** smooth return motion (only the outbound leg is walked). |
+| `ReverseReturn`     | Walks back along the same line (the default).                                          |
+| `TeleportReturn`    | Hard-teleports back to the nest the instant the far point is reached — **no** smooth return motion (only the outbound leg is walked). |
+
+`HalfLoop` and `Spiral` both end their outbound leg away from the direct line home, so they share a
+richer set of return options:
+
+| `halfLoopReturnMode` / `spiralReturnMode` | What it does                                                             |
+|--------------------------------------------|---------------------------------------------------------------------------|
+| `ReverseReturn`     | Retraces the same arc/coil back to the nest (the default).                             |
+| `DirectReturn`      | Walks a straight line from the turnaround point directly back to the nest.             |
+| `TeleportReturn`    | Hard-teleports back to the nest the instant the turnaround point is reached — **no** smooth return motion (only the outbound leg is walked). |
+
+`RandomPoint` always picks points within a disk tangent to the nest (same placement as `FullLoop`).
+`teleport` (default `true`) controls both legs of each hop:
+
+| `teleport` | What it does                                                                                  |
+|------------|------------------------------------------------------------------------------------------------|
+| `true`     | Hard-teleports instantly to the chosen point and back — **no** smooth motion (the default).     |
+| `false`    | Walks both legs at `moveSpeed`, holding at the point for `holdDuration` FixedUpdates in between. |
 
 Additional controls:
 
@@ -168,11 +188,11 @@ teleportation condition, or systematically toggle/vary pirouettes and voltes.
 
 1. On the agent's `AntWalkBuilder`, set `homeCollider` to the nest collider.
 2. Expand `playlist` and add `PathDefinition` entries — e.g.:
-   - `StraightOutAndBack`, `distance = 10`, `directionAngle = 0`, `repeats = 2`
+   - `Line`, `distance = 10`, `directionAngle = 0`, `repeats = 2`
    - `FullLoop`, `loopDiameter = 5`, `loopDirection = Clockwise`, `repeats = 1`
    - `HalfLoop`, `loopDiameter = 5`, `loopDirection = Random`, `repeats = 1`
-   - `Spiral`, `loopDiameter = 8`, `spiralTurns = 3`, `loopDirection = CounterClockwise`, `spiralReturnMode = StraightReturn`, `repeats = 1`
-   - `RandomTeleport`, `teleportDiameter = 20`, `holdDuration = 60`, `repeats = 5`
+   - `Spiral`, `loopDiameter = 8`, `spiralTurns = 3`, `loopDirection = CounterClockwise`, `spiralReturnMode = DirectReturn`, `repeats = 1`
+   - `RandomPoint`, `teleport = false`, `teleportDiameter = 20`, `holdDuration = 60`, `repeats = 5`
 3. Set `loopPlaylist` if the session should repeat, and `seed` if you want the run reproducible.
 4. Set `pirouetteChance` / `volteChance` (and `volteSize`) to include or exclude those movements and
    tune their rate.

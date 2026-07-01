@@ -80,14 +80,6 @@ public class AntRandomWalk : MonoBehaviour
     void UpdateUI()
     {
         Debug.DrawLine(transform.position, homePosition, Color.green);
-        textMeshProUGUI.text = "Steps: " + step + "\n" +
-                               "Returns: " + returns + "\n" +
-                               "Distance: " + Mathf.Round(Vector3.Distance(transform.position, homePosition)) + "\n" +
-                               "Pirouetting: " + isPirouetting + "\n" +
-                               "Chance to Turn Home: " + Mathf.Round(Mathf.Min(turnHomeChance, 100)) + "%\n" +
-                               "Homing Rate Strength: " + returnHomeIncrease + "\n" +
-                               "Pirouette Chance: " + perroutteChance + "%\n" +
-                               "(X, Y) Coordinate: (" + Mathf.Round(transform.localPosition.x) + ", " + Mathf.Round(transform.localPosition.z) + ")\n";
     }
 
     public Vector3[] GetGridLocations(Vector3 center, float tileSize, float totalGridWidth){
@@ -129,56 +121,6 @@ public class AntRandomWalk : MonoBehaviour
         //     }
         //     transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(navMeshAgent.velocity.normalized, normal), 0.1f);
         // }
-
-        // Set the Timescale with F1-F12 Keys
-        if (Input.GetKeyDown(KeyCode.F1))
-        {
-            Time.timeScale = 1;
-        }
-        if (Input.GetKeyDown(KeyCode.F2))
-        {
-            Time.timeScale = 2;
-        }
-        if (Input.GetKeyDown(KeyCode.F3))
-        {
-            Time.timeScale = 3;
-        }
-        if (Input.GetKeyDown(KeyCode.F4))
-        {
-            Time.timeScale = 4;
-        }
-        if (Input.GetKeyDown(KeyCode.F5))
-        {
-            Time.timeScale = 5;
-        }
-        if (Input.GetKeyDown(KeyCode.F6))
-        {
-            Time.timeScale = 6;
-        }
-        if (Input.GetKeyDown(KeyCode.F7))
-        {
-            Time.timeScale = 7;
-        }
-        if (Input.GetKeyDown(KeyCode.F8))
-        {
-            Time.timeScale = 8;
-        }
-        if (Input.GetKeyDown(KeyCode.F9))
-        {
-            Time.timeScale = 9;
-        }
-        if (Input.GetKeyDown(KeyCode.F10))
-        {
-            Time.timeScale = 10;
-        }
-        if (Input.GetKeyDown(KeyCode.F11))
-        {
-            Time.timeScale = 11;
-        }
-        if (Input.GetKeyDown(KeyCode.F12))
-        {
-            Time.timeScale = 12;
-        }
 
         // If not GridMode, target Location is always Zero
         targetLocation = GridMode ? targetLocation : Vector3.zero;

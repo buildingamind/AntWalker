@@ -5249,7 +5249,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 03b634ef8bb9d6643930658d7119dd61, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  agentTarget: {fileID: 0}
+  agentTarget: {fileID: 7111923683411865951}
   sunPosition: {fileID: 0}
   meshRenderer: {fileID: 7211705580792833112}
   alpha: 0
@@ -5476,7 +5476,7 @@ CapsuleCollider:
   m_Enabled: 1
   serializedVersion: 2
   m_Radius: 0.0035419553
-  m_Height: 0.018680885
+  m_Height: 0.01768089
   m_Direction: 2
   m_Center: {x: -0.000009494601, y: 0.00071862625, z: -0.0033195268}
 --- !u!1 &7111923683411865891
@@ -6531,7 +6531,7 @@ GameObject:
   - component: {fileID: 4695316744705001372}
   - component: {fileID: 2797110989666470123}
   m_Layer: 0
-  m_Name: Ant_RandomWalkAgent
+  m_Name: Ant
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -6574,72 +6574,119 @@ MonoBehaviour:
     repeats: 1
     directionAngle: 0
     distance: 40
-    loopDiameter: 5
+    lineReturnMode: 0
+    loopDiameter: 20
     loopDirection: 0
+    halfLoopReturnMode: 0
     spiralTurns: 3
     spiralReturnMode: 0
-    teleportDiameter: 40
-    holdDuration: 0
-  - type: 0
-    repeats: 1
-    directionAngle: -45
-    distance: 20
-    loopDiameter: 5
-    loopDirection: 0
-    spiralTurns: 3
-    spiralReturnMode: 0
-    teleportDiameter: 40
-    holdDuration: 0
-  - type: 0
-    repeats: 1
-    directionAngle: 45
-    distance: 20
-    loopDiameter: 5
-    loopDirection: 0
-    spiralTurns: 3
-    spiralReturnMode: 0
-    teleportDiameter: 40
-    holdDuration: 0
-  - type: 2
-    repeats: 1
-    directionAngle: 0
-    distance: 0
-    loopDiameter: 40
-    loopDirection: 0
-    spiralTurns: 3
-    spiralReturnMode: 0
-    teleportDiameter: 40
-    holdDuration: 0
-  - type: 2
-    repeats: 1
-    directionAngle: 0
-    distance: 0
-    loopDiameter: 40
-    loopDirection: 1
-    spiralTurns: 3
-    spiralReturnMode: 0
-    teleportDiameter: 40
-    holdDuration: 0
-  - type: 2
-    repeats: 2
-    directionAngle: 0
-    distance: 0
-    loopDiameter: 5
-    loopDirection: 2
-    spiralTurns: 3
-    spiralReturnMode: 0
+    teleport: 0
     teleportDiameter: 40
     holdDuration: 0
   - type: 1
-    repeats: 20
+    repeats: 1
     directionAngle: 0
-    distance: 0
-    loopDiameter: 40
+    distance: 40
+    lineReturnMode: 0
+    loopDiameter: 32
+    loopDirection: 1
+    halfLoopReturnMode: 0
+    spiralTurns: 2
+    spiralReturnMode: 0
+    teleport: 1
+    teleportDiameter: 40
+    holdDuration: 0
+  - type: 2
+    repeats: 1
+    directionAngle: 0
+    distance: 40
+    lineReturnMode: 0
+    loopDiameter: 26
     loopDirection: 0
+    halfLoopReturnMode: 1
+    spiralTurns: 2
+    spiralReturnMode: 0
+    teleport: 1
+    teleportDiameter: 40
+    holdDuration: 0
+  - type: 3
+    repeats: 1
+    directionAngle: 0
+    distance: 40
+    lineReturnMode: 0
+    loopDiameter: 23
+    loopDirection: 1
+    halfLoopReturnMode: 0
     spiralTurns: 3
     spiralReturnMode: 0
-    teleportDiameter: 25
-    holdDuration: 10
+    teleport: 1
+    teleportDiameter: 40
+    holdDuration: 0
+  - type: 4
+    repeats: 1
+    directionAngle: 0
+    distance: 40
+    lineReturnMode: 0
+    loopDiameter: 20
+    loopDirection: 1
+    halfLoopReturnMode: 0
+    spiralTurns: 2
+    spiralReturnMode: 0
+    teleport: 1
+    teleportDiameter: 40
+    holdDuration: 0
+  - type: 0
+    repeats: 2
+    directionAngle: 90
+    distance: 10
+    lineReturnMode: 0
+    loopDiameter: 20
+    loopDirection: 1
+    halfLoopReturnMode: 0
+    spiralTurns: 2
+    spiralReturnMode: 0
+    teleport: 1
+    teleportDiameter: 40
+    holdDuration: 0
+  - type: 0
+    repeats: 2
+    directionAngle: -90
+    distance: 10
+    lineReturnMode: 0
+    loopDiameter: 20
+    loopDirection: 1
+    halfLoopReturnMode: 0
+    spiralTurns: 2
+    spiralReturnMode: 0
+    teleport: 1
+    teleportDiameter: 40
+    holdDuration: 0
+  - type: 0
+    repeats: 2
+    directionAngle: -45
+    distance: 10
+    lineReturnMode: 0
+    loopDiameter: 20
+    loopDirection: 1
+    halfLoopReturnMode: 0
+    spiralTurns: 2
+    spiralReturnMode: 0
+    teleport: 1
+    teleportDiameter: 40
+    holdDuration: 0
+  - type: 0
+    repeats: 2
+    directionAngle: 45
+    distance: 10
+    lineReturnMode: 0
+    loopDiameter: 20
+    loopDirection: 1
+    halfLoopReturnMode: 0
+    spiralTurns: 2
+    spiralReturnMode: 0
+    teleport: 1
+    teleportDiameter: 40
+    holdDuration: 0
   loopPlaylist: 1
   segmentIndex: 0
   repeatCount: 0
