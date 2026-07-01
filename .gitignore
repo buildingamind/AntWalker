@@ -81,3 +81,12 @@ plastic.selector
 *.tar
 *.zip
 *.tgz
+*.csv
+**/Assets/Logs
+
+# ========================
+# Baked Lighting / Adaptive Probe Volumes
+# Regenerate via Window > Rendering > Lighting > Generate Lighting
+# ========================
+**/*Baking Set*.bytes
+**/*Baking Set*.bytes.meta

@@ -3,7 +3,6 @@ using System.IO;
 using System.Collections.Generic;
 using UnityEngine;
 using System;
-using TMPro;
 
 [System.Flags]
 public enum AttributeEnum : int
@@ -68,8 +67,8 @@ public class LogManager : MonoBehaviour
 
     public string runID;
     public string logPath;
-
-    public TextMeshProUGUI episodeMonitor;
+    [Tooltip("Append the current date/time to the Run ID, so consecutive runs get their own log folder instead of overwriting each other's.")]
+    public bool timestampRunID = false;
 
     private List<GameObject> headerObjects;
 
@@ -87,7 +86,12 @@ public class LogManager : MonoBehaviour
             {
                 runID = ArgumentParser.Options.runID;
             }
-            
+
+            if (timestampRunID)
+            {
+                runID += "_" + DateTime.Now.ToString("yyyyMMdd_HHmmss");
+            }
+
             /*cameraFrequency = ArgumentParser.Options.cameraFrequency;*/
 
             // Create Logging Directory
@@ -172,10 +176,6 @@ public class LogManager : MonoBehaviour
         // Prevent the logger from double logging
         currentEpisode = episode;
         currentStep = step;
-        if (episodeMonitor is not null)
-        {
-            episodeMonitor.text = string.Format("Episode: {0} : Step {1}", episode, step);
-        }
 
         // Collect the attribute data. 
         // Include any other attributes you want to collect in this method.
