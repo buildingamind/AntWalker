@@ -71,7 +71,7 @@ public class PathDefinitionDrawer : PropertyDrawer
         {
             // Fill the gutter to the left of the element, out to the list boundary, as a
             // "playhead" marker instead of lightening the element's own backdrop.
-            Rect markerRect = new Rect(position.x * 0.5f, position.y, position.x * 0.25f, position.height);
+            Rect markerRect = new Rect(position.x * 0.1f, position.y, position.x * 0.25f, position.height);
             EditorGUI.DrawRect(markerRect, ActiveMarkerColor);
         }
 

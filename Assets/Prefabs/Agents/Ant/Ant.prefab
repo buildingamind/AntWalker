@@ -6623,7 +6623,7 @@ MonoBehaviour:
     teleportDiameter: 40
     holdDuration: 0
   - type: 4
-    repeats: 1
+    repeats: 50
     directionAngle: 0
     distance: 40
     lineReturnMode: 0
@@ -6634,7 +6634,7 @@ MonoBehaviour:
     spiralReturnMode: 0
     teleport: 1
     teleportDiameter: 40
-    holdDuration: 0
+    holdDuration: 10
   - type: 0
     repeats: 2
     directionAngle: 90
