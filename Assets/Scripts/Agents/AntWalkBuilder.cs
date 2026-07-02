@@ -872,7 +872,7 @@ public class AntWalkBuilder : MonoBehaviour
         GUILayout.Label($"<b>Volting:</b> {isVolting}", smallLabelStyle);
         GUILayout.Label($"<b>(X, Z):</b> ({Mathf.Round(transform.position.x)}, {Mathf.Round(transform.position.z)})", smallLabelStyle);
         GUILayout.Label($"<b>Timescale:</b> {Time.timeScale}", smallLabelStyle);
-        GUILayout.Label("[F1]-[F12]: Timescale 1x-12x", hintLabelStyle);
+        GUILayout.Label("<b>[F1]</b> - <b>[F12]</b>: Timescale 1x-12x", hintLabelStyle);
 
         GUI.DragWindow();
     }

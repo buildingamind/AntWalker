@@ -106,7 +106,7 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[1].loopDiameter
-    value: 32
+    value: 33
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[1].loopDirection
