@@ -82,11 +82,11 @@ public class AntWalkBuilder : MonoBehaviour
         public ReturnMode spiralReturnMode = ReturnMode.ReverseReturn;
 
         [Header("Random Point")]
-        [Tooltip("[Random Point] If true, hard-teleport instantly to the chosen point and back. If false, walk both legs at moveSpeed.")]
+        [Tooltip("[Random Point] If true, hard-teleport instantly to each chosen point and back to the nest. If false, walk point-to-point at moveSpeed, only returning to the nest after the last point.")]
         public bool teleport = true;
         [Tooltip("[Random Point] Diameter of the region (tangent to the nest, same placement as Full Loop) to pick points within.")]
         public float teleportDiameter = 40f;
-        [Tooltip("[Random Point] How many FixedUpdates to hold each chosen position before returning to the nest.")]
+        [Tooltip("[Random Point] How many FixedUpdates to hold each chosen position before moving on.")]
         public int holdDuration = 10;
     }
 
@@ -194,38 +194,34 @@ public class AntWalkBuilder : MonoBehaviour
         PathDefinition seg = playlist[segmentIndex];
         currentType = seg.type;
 
-        if (seg.type == WalkType.RandomPoint)
+        // Detours take priority and only fire when not already detouring.
+        if (!isPirouetting && !isVolting)
         {
-            // No pirouettes or voltes while visiting random points, whether teleporting or walking.
+            if (Random.value < pirouetteChance)
+            {
+                StartPirouette();
+            }
+            else if (Random.value < volteChance)
+            {
+                StartVolte();
+            }
+        }
+
+        if (isPirouetting)
+        {
+            UpdatePirouette();
+        }
+        else if (isVolting)
+        {
+            UpdateVolte();
+        }
+        else if (seg.type == WalkType.RandomPoint)
+        {
             UpdateRandomPoint(seg);
         }
         else
         {
-            // Detours take priority and only fire when not already detouring.
-            if (!isPirouetting && !isVolting)
-            {
-                if (Random.value < pirouetteChance)
-                {
-                    StartPirouette();
-                }
-                else if (Random.value < volteChance)
-                {
-                    StartVolte();
-                }
-            }
-
-            if (isPirouetting)
-            {
-                UpdatePirouette();
-            }
-            else if (isVolting)
-            {
-                UpdateVolte();
-            }
-            else
-            {
-                AdvancePath(seg);
-            }
+            AdvancePath(seg);
         }
 
         if (logManager != null && logManager.enabled)
@@ -704,11 +700,20 @@ public class AntWalkBuilder : MonoBehaviour
                 return;
             }
 
+            // Walking mode visits points back-to-back (point -> point -> point), only
+            // detouring via the nest after the segment's final point.
+            bool lastHop = repeatCount + 1 >= Mathf.Max(1, seg.repeats);
+            if (!lastHop)
+            {
+                CompleteRandomPointHop(seg);
+                return;
+            }
+
             randomPointReturning = true;
             return;
         }
 
-        // Walking back to the nest.
+        // Walking back to the nest (only reached after the segment's final point).
         if (WalkTowards(new Vector3(home.x, transform.position.y, home.z)))
         {
             CompleteRandomPointHop(seg);
@@ -831,6 +836,7 @@ public class AntWalkBuilder : MonoBehaviour
 
     private GUIStyle smallLabelStyle;
     private GUIStyle walkLabelStyle;
+    private GUIStyle hintLabelStyle;
 
     void OnGUI()
     {
@@ -850,6 +856,11 @@ public class AntWalkBuilder : MonoBehaviour
             walkLabelStyle = new GUIStyle(smallLabelStyle) { fontStyle = FontStyle.Bold };
         }
         walkLabelStyle.normal.textColor = GizmoColorFor(currentType);
+        if (hintLabelStyle == null)
+        {
+            hintLabelStyle = new GUIStyle(smallLabelStyle);
+            hintLabelStyle.normal.textColor = new Color(0.75f, 0.75f, 0.75f);
+        }
 
         GUILayout.Label($"Walk: {currentType}", walkLabelStyle);
         GUILayout.Label($"<b>Segment:</b> {segmentIndex + 1} / {(playlist != null ? playlist.Count : 0)}", smallLabelStyle);
@@ -861,6 +872,7 @@ public class AntWalkBuilder : MonoBehaviour
         GUILayout.Label($"<b>Volting:</b> {isVolting}", smallLabelStyle);
         GUILayout.Label($"<b>(X, Z):</b> ({Mathf.Round(transform.position.x)}, {Mathf.Round(transform.position.z)})", smallLabelStyle);
         GUILayout.Label($"<b>Timescale:</b> {Time.timeScale}", smallLabelStyle);
+        GUILayout.Label("[F1]-[F12]: Timescale 1x-12x", hintLabelStyle);
 
         GUI.DragWindow();
     }
@@ -907,14 +919,25 @@ public class AntWalkBuilder : MonoBehaviour
             PathDefinition seg = playlist[i];
             bool active = Application.isPlaying && i == segmentIndex;
             Color color = GizmoColorFor(seg.type);
-            // Highlight the active segment by blending toward white rather than losing its hue.
-            Gizmos.color = active ? Color.Lerp(color, Color.white, 0.5f) : color;
+            
+            bool isLighter = (Time.unscaledTime % 0.5f) < 0.25f;
+            if (active)
+            {
+                // Highlight the active segment by flashing between its base color and a lighter color.
+                Gizmos.color = isLighter ? Color.Lerp(color, Color.white, 0.5f) : color;
+            }
+            else
+            {
+                Gizmos.color = color;
+            }
+
             DrawSegmentGizmo(seg, h);
 
             if (active && seg.type == WalkType.RandomPoint && !seg.teleport && randomPointPlaced)
             {
-                // Mark the chosen point, same marker style as Line's endpoint.
-                Gizmos.color = RandomPointGizmoColor;
+                // Mark the chosen point, same marker style as Line's endpoint, flashing in step
+                // with the active-segment highlight above instead of sitting at a flat color.
+                Gizmos.color = isLighter ? Color.Lerp(RandomPointGizmoColor, Color.white, 0.5f) : RandomPointGizmoColor;
                 Gizmos.DrawWireSphere(randomPointTarget, 0.25f);
 
                 if (!randomPointArrived || randomPointReturning)

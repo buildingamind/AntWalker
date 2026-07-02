@@ -104,6 +104,9 @@ richer set of return options:
 
 Additional controls:
 
+- **Home**: the nest position is captured once, from the agent's own `transform.position` at
+  `Start`, rather than a separately assigned nest object — so place the agent at the nest in the
+  scene before pressing Play.
 - **Playlist**: fill `playlist` with segments and set `repeats` per segment; segments are performed
   in order, then the list optionally restarts (`loopPlaylist`). Segments can be chained like tracks in
   a playlist to build a full multi-walk session.
@@ -113,8 +116,8 @@ Additional controls:
 - **Pirouettes & voltes**: fire independently of the path at a per-step probability
   (`pirouetteChance`, `volteChance`). Each is a *temporary detour* — a pirouette spins in place; a
   volte traces a small circle of configurable `volteSize` — after which the agent returns to exactly
-  where it left the path and resumes. Set the chances to `0` to disable either. Teleport segments
-  never pirouette or volte.
+  where it left the path and resumes. Set the chances to `0` to disable either. They can also fire
+  during `RandomPoint` segments, including between the roll and a teleport hop.
 - **Trajectory preview**: when `drawTrajectory` is on, the planned target path for every segment is
   drawn in the **Scene view** via gizmos (lines, loop/spiral arcs, and a ring for the teleport region),
   so you can lay out a session visually before pressing Play. A `Spiral` with `TeleportReturn` only
@@ -159,6 +162,13 @@ teleportation condition, or systematically toggle/vary pirouettes and voltes.
 - [Assets/Scripts/Helpers/TimescaleManager.cs](Assets/Scripts/Helpers/TimescaleManager.cs) — drives
   `Time.timeScale` from `ArgumentParser.Options.timescale` in built (non-editor) runs, so headless
   batch jobs can request a fixed speed-up via `--timescale` instead of the F1–F12 hotkeys.
+- [Assets/Scripts/Logging/LogMe.cs](Assets/Scripts/Logging/LogMe.cs) — attach to any object to
+  self-register with (and deregister from) a `LogManager`'s `loggedObjects`, instead of adding it
+  to the list by hand.
+- [Assets/Editor/PathDefinitionDrawer.cs](Assets/Editor/PathDefinitionDrawer.cs) — the custom
+  Inspector drawer behind `AntWalkBuilder`'s playlist: shows only the fields relevant to each
+  segment's `WalkType`, labels entries by walk type instead of "Element N", and highlights the
+  currently-executing segment during Play.
 
 ---
 
@@ -174,19 +184,21 @@ teleportation condition, or systematically toggle/vary pirouettes and voltes.
 ### Open and run
 
 1. Open the project in Unity and load the scene [Assets/Scenes/AntScene.unity](Assets/Scenes/AntScene.unity).
-2. Select the ant agent (from the [Ant_RandomWalkAgent](Assets/Prefabs/Agents/Ant/Ant_RandomWalkAgent.prefab)
-   prefab).
+2. Select the ant agent (from the [Ant](Assets/Prefabs/Agents/Ant/Ant.prefab) prefab). Both
+   `AntRandomWalk` and `AntWalkBuilder` are already attached, side by side — only one should be
+   **enabled** at a time.
 3. Choose the behaviour:
-   - For emergent exploration, keep/attach **`AntRandomWalk`**.
-   - For controlled walks, attach **`AntWalkBuilder`** instead, assign its `homeCollider` (the nest),
-     and build a `playlist`.
+   - For emergent exploration, enable **`AntRandomWalk`** and disable `AntWalkBuilder`.
+   - For controlled walks, enable **`AntWalkBuilder`** (the default) and disable
+     `AntRandomWalk`, then build a `playlist`.
 4. (Optional) Assign a **`LogManager`** and set its `loggedObjects`, `objectAttributes`,
    `loggedCameras`, and a `runID` to record data.
 5. Press **Play**. Use **F1–F12** to speed up time.
 
 ### Configuring a controlled session (`AntWalkBuilder`)
 
-1. On the agent's `AntWalkBuilder`, set `homeCollider` to the nest collider.
+1. Position the agent where the nest should be — `AntWalkBuilder` captures that starting position
+   as home on `Start`.
 2. Expand `playlist` and add `PathDefinition` entries — e.g.:
    - `Line`, `distance = 10`, `directionAngle = 0`, `repeats = 2`
    - `FullLoop`, `loopDiameter = 5`, `loopDirection = Clockwise`, `repeats = 1`
@@ -223,12 +235,16 @@ teammates or machines.
   `AntWalkBuilder` since a preset was saved just keep their default, and fields the preset has that no
   longer exist are silently ignored.
 
-Two presets currently ship in the folder as starting points:
+Several presets currently ship in the folder as starting points:
 
-| Preset                  | Condition                                                                                     |
-|--------------------------|------------------------------------------------------------------------------------------------|
+| Preset                    | Condition                                                                                     |
+|---------------------------|------------------------------------------------------------------------------------------------|
 | `DemoWalkPlaylist.preset` | A mixed session: two angled out-and-backs, a full loop, then a long random-teleport block — a general-purpose demo touching every walk type. |
-| `LoopyLoops.preset`      | An all-`FullLoop` session at increasing diameters (10 → 40) with mixed CW/CCW/Random directions — a loop-only condition for isolating how loop size/direction affects place recognition. |
+| `LoopyLoops.preset`       | An all-`FullLoop` session at increasing diameters (10 → 40) with mixed CW/CCW/Random directions — a loop-only condition for isolating how loop size/direction affects place recognition. |
+| `SingleFullLoop.preset`   | A single `FullLoop` at diameter 50 with random direction — a minimal one-segment baseline. |
+| `OutAndBack.preset`       | A single `Line`, distance 10, `ReverseReturn` — the simplest possible out-and-back baseline. |
+| `AllWalkTypes.preset`     | One segment of each walk type (`Line`, `FullLoop`, `HalfLoop`, `Spiral`, `RandomPoint`) followed by repeated random-point and line segments — a broader smoke test than `DemoWalkPlaylist`. |
+| `RandomWalk.preset`       | An all-`RandomPoint` session (20 points, walked rather than teleported, within a diameter-50 disk) — the walking (non-teleport) random-point condition. |
 
 ### Where the data goes
 

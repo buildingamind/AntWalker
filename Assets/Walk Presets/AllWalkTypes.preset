@@ -6,7 +6,7 @@ Preset:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: LoopyLoops
+  m_Name: AllWalkTypes
   m_TargetType:
     m_NativeTypeID: 114
     m_ManagedTypePPtr: {fileID: 11500000, guid: c43944b131bdc4f4e97a62e498e27586, type: 3}
@@ -30,11 +30,11 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.size
-    value: 7
+    value: 10
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[0].type
-    value: 2
+    value: 0
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[0].repeats
@@ -46,7 +46,7 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[0].distance
-    value: 0
+    value: 40
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[0].lineReturnMode
@@ -54,7 +54,7 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[0].loopDiameter
-    value: 10
+    value: 20
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[0].loopDirection
@@ -66,7 +66,7 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[0].spiralTurns
-    value: 0
+    value: 3
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[0].spiralReturnMode
@@ -86,7 +86,7 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[1].type
-    value: 2
+    value: 1
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[1].repeats
@@ -98,7 +98,7 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[1].distance
-    value: 0
+    value: 40
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[1].lineReturnMode
@@ -106,7 +106,7 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[1].loopDiameter
-    value: 20
+    value: 32
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[1].loopDirection
@@ -118,7 +118,7 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[1].spiralTurns
-    value: 0
+    value: 2
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[1].spiralReturnMode
@@ -126,7 +126,7 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[1].teleport
-    value: 0
+    value: 1
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[1].teleportDiameter
@@ -150,7 +150,7 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[2].distance
-    value: 0
+    value: 40
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[2].lineReturnMode
@@ -158,7 +158,7 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[2].loopDiameter
-    value: 30
+    value: 26
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[2].loopDirection
@@ -166,11 +166,11 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[2].halfLoopReturnMode
-    value: 0
+    value: 1
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[2].spiralTurns
-    value: 0
+    value: 2
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[2].spiralReturnMode
@@ -178,7 +178,7 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[2].teleport
-    value: 0
+    value: 1
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[2].teleportDiameter
@@ -190,7 +190,7 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[3].type
-    value: 2
+    value: 3
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[3].repeats
@@ -202,7 +202,7 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[3].distance
-    value: 0
+    value: 40
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[3].lineReturnMode
@@ -210,7 +210,7 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[3].loopDiameter
-    value: 40
+    value: 23
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[3].loopDirection
@@ -222,7 +222,7 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[3].spiralTurns
-    value: 0
+    value: 3
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[3].spiralReturnMode
@@ -230,7 +230,7 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[3].teleport
-    value: 0
+    value: 1
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[3].teleportDiameter
@@ -242,11 +242,11 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[4].type
-    value: 2
+    value: 4
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[4].repeats
-    value: 5
+    value: 50
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[4].directionAngle
@@ -254,7 +254,7 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[4].distance
-    value: 0
+    value: 40
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[4].lineReturnMode
@@ -262,11 +262,11 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[4].loopDiameter
-    value: 5
+    value: 20
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[4].loopDirection
-    value: 2
+    value: 1
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[4].halfLoopReturnMode
@@ -274,7 +274,7 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[4].spiralTurns
-    value: 0
+    value: 2
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[4].spiralReturnMode
@@ -282,7 +282,7 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[4].teleport
-    value: 0
+    value: 1
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[4].teleportDiameter
@@ -290,15 +290,15 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[4].holdDuration
-    value: 0
+    value: 10
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[5].type
-    value: 2
+    value: 4
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[5].repeats
-    value: 1
+    value: 10
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[5].directionAngle
@@ -306,7 +306,7 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[5].distance
-    value: 0
+    value: 40
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[5].lineReturnMode
@@ -314,11 +314,11 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[5].loopDiameter
-    value: 5
+    value: 20
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[5].loopDirection
-    value: 2
+    value: 1
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[5].halfLoopReturnMode
@@ -326,7 +326,7 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[5].spiralTurns
-    value: 0
+    value: 2
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[5].spiralReturnMode
@@ -342,23 +342,23 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[5].holdDuration
-    value: 0
+    value: 50
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[6].type
-    value: 2
+    value: 0
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[6].repeats
-    value: 1
+    value: 2
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[6].directionAngle
-    value: 0
+    value: 90
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[6].distance
-    value: 0
+    value: 10
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[6].lineReturnMode
@@ -366,11 +366,11 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[6].loopDiameter
-    value: 5
+    value: 20
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[6].loopDirection
-    value: 2
+    value: 1
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[6].halfLoopReturnMode
@@ -378,7 +378,7 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[6].spiralTurns
-    value: 0
+    value: 2
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[6].spiralReturnMode
@@ -386,7 +386,7 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[6].teleport
-    value: 0
+    value: 1
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[6].teleportDiameter
@@ -394,6 +394,162 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: playlist.Array.data[6].holdDuration
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: playlist.Array.data[7].type
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: playlist.Array.data[7].repeats
+    value: 2
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: playlist.Array.data[7].directionAngle
+    value: -90
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: playlist.Array.data[7].distance
+    value: 10
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: playlist.Array.data[7].lineReturnMode
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: playlist.Array.data[7].loopDiameter
+    value: 20
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: playlist.Array.data[7].loopDirection
+    value: 1
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: playlist.Array.data[7].halfLoopReturnMode
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: playlist.Array.data[7].spiralTurns
+    value: 2
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: playlist.Array.data[7].spiralReturnMode
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: playlist.Array.data[7].teleport
+    value: 1
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: playlist.Array.data[7].teleportDiameter
+    value: 40
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: playlist.Array.data[7].holdDuration
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: playlist.Array.data[8].type
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: playlist.Array.data[8].repeats
+    value: 2
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: playlist.Array.data[8].directionAngle
+    value: -45
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: playlist.Array.data[8].distance
+    value: 10
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: playlist.Array.data[8].lineReturnMode
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: playlist.Array.data[8].loopDiameter
+    value: 20
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: playlist.Array.data[8].loopDirection
+    value: 1
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: playlist.Array.data[8].halfLoopReturnMode
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: playlist.Array.data[8].spiralTurns
+    value: 2
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: playlist.Array.data[8].spiralReturnMode
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: playlist.Array.data[8].teleport
+    value: 1
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: playlist.Array.data[8].teleportDiameter
+    value: 40
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: playlist.Array.data[8].holdDuration
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: playlist.Array.data[9].type
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: playlist.Array.data[9].repeats
+    value: 2
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: playlist.Array.data[9].directionAngle
+    value: 45
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: playlist.Array.data[9].distance
+    value: 10
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: playlist.Array.data[9].lineReturnMode
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: playlist.Array.data[9].loopDiameter
+    value: 20
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: playlist.Array.data[9].loopDirection
+    value: 1
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: playlist.Array.data[9].halfLoopReturnMode
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: playlist.Array.data[9].spiralTurns
+    value: 2
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: playlist.Array.data[9].spiralReturnMode
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: playlist.Array.data[9].teleport
+    value: 1
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: playlist.Array.data[9].teleportDiameter
+    value: 40
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: playlist.Array.data[9].holdDuration
     value: 0
     objectReference: {fileID: 0}
   - target: {fileID: 0}
