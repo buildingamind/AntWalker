@@ -6617,7 +6617,7 @@ MonoBehaviour:
     loopDiameter: 23
     loopDirection: 1
     halfLoopReturnMode: 0
-    spiralTurns: 3
+    spiralTurns: 4
     spiralReturnMode: 0
     teleport: 1
     teleportDiameter: 40
@@ -6700,11 +6700,24 @@ MonoBehaviour:
     teleport: 1
     teleportDiameter: 40
     holdDuration: 0
+  - type: 0
+    repeats: 0
+    directionAngle: 0
+    distance: 0
+    lineReturnMode: 0
+    loopDiameter: 0
+    loopDirection: 0
+    halfLoopReturnMode: 0
+    spiralTurns: 0
+    spiralReturnMode: 0
+    teleport: 0
+    teleportDiameter: 0
+    holdDuration: 0
   loopPlaylist: 1
   segmentIndex: 0
   repeatCount: 0
   currentType: 0
-  moveSpeed: 5
+  moveSpeed: 10
   pirouetteChance: 0.001
   pirouetteSize: 20
   isPirouetting: 0

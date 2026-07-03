@@ -77,7 +77,7 @@ public class AntWalkBuilder : MonoBehaviour
 
         [Header("Spiral")]
         [Tooltip("[Spiral] Number of coils the spiral winds through going out (and again coming back, if the return mode retraces it). Higher values coil tighter for the same diameter.")]
-        public float spiralTurns = 3f;
+        public float spiralTurns = 5f;
         [Tooltip("[Spiral] How the ant gets back to the nest after reaching the spiral's innermost point.")]
         public ReturnMode spiralReturnMode = ReturnMode.ReverseReturn;
 
