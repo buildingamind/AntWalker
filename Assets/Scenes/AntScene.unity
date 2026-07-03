@@ -35133,54 +35133,6 @@ PrefabInstance:
       propertyPath: sunPosition
       value: 
       objectReference: {fileID: 1959104164}
-    - target: {fileID: 4826860876274670577, guid: 3e2dd444f0726a24a89ce64f36a51805, type: 3}
-      propertyPath: moveSpeed
-      value: 5
-      objectReference: {fileID: 0}
-    - target: {fileID: 4826860876274670577, guid: 3e2dd444f0726a24a89ce64f36a51805, type: 3}
-      propertyPath: playlist.Array.size
-      value: 11
-      objectReference: {fileID: 0}
-    - target: {fileID: 4826860876274670577, guid: 3e2dd444f0726a24a89ce64f36a51805, type: 3}
-      propertyPath: playlist.Array.data[10].type
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4826860876274670577, guid: 3e2dd444f0726a24a89ce64f36a51805, type: 3}
-      propertyPath: playlist.Array.data[10].repeats
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4826860876274670577, guid: 3e2dd444f0726a24a89ce64f36a51805, type: 3}
-      propertyPath: playlist.Array.data[10].distance
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4826860876274670577, guid: 3e2dd444f0726a24a89ce64f36a51805, type: 3}
-      propertyPath: playlist.Array.data[10].teleport
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4826860876274670577, guid: 3e2dd444f0726a24a89ce64f36a51805, type: 3}
-      propertyPath: playlist.Array.data[3].spiralTurns
-      value: 4
-      objectReference: {fileID: 0}
-    - target: {fileID: 4826860876274670577, guid: 3e2dd444f0726a24a89ce64f36a51805, type: 3}
-      propertyPath: playlist.Array.data[10].spiralTurns
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4826860876274670577, guid: 3e2dd444f0726a24a89ce64f36a51805, type: 3}
-      propertyPath: playlist.Array.data[10].loopDiameter
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4826860876274670577, guid: 3e2dd444f0726a24a89ce64f36a51805, type: 3}
-      propertyPath: playlist.Array.data[10].loopDirection
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4826860876274670577, guid: 3e2dd444f0726a24a89ce64f36a51805, type: 3}
-      propertyPath: playlist.Array.data[10].directionAngle
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4826860876274670577, guid: 3e2dd444f0726a24a89ce64f36a51805, type: 3}
-      propertyPath: playlist.Array.data[10].teleportDiameter
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 5465812587606142609, guid: 3e2dd444f0726a24a89ce64f36a51805, type: 3}
       propertyPath: m_LocalScale.x
       value: 0.02

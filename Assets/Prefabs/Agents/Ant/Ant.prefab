@@ -6601,7 +6601,7 @@ MonoBehaviour:
     directionAngle: 0
     distance: 40
     lineReturnMode: 0
-    loopDiameter: 26
+    loopDiameter: 27
     loopDirection: 0
     halfLoopReturnMode: 1
     spiralTurns: 2
