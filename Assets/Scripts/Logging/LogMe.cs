@@ -6,10 +6,9 @@ public class LogMe : MonoBehaviour
 {
     public LogManager logManager;
 
-    // Start is called before the first frame update
-    void Start()
+    void OnEnable()
     {
-        if (!logManager.loggedObjects.Contains(this.gameObject))
+        if (logManager != null && !logManager.loggedObjects.Contains(this.gameObject))
         {
             logManager.loggedObjects.Add(this.gameObject);
         }
@@ -33,11 +32,31 @@ public class LogMe : MonoBehaviour
         }
     }
 
-    void OnDestroy()
+    void OnDisable()
     {
-        if (logManager.loggedObjects.Contains(this.gameObject))
+        if (logManager != null && logManager.loggedObjects.Contains(this.gameObject))
         {
             logManager.loggedObjects.Remove(this.gameObject);
         }
     }
+
+#if UNITY_EDITOR
+    void OnValidate()
+    {
+        if (Application.isPlaying) return;
+
+        if (logManager != null)
+        {
+            logManager.RefreshLoggedObjects();
+        }
+        else
+        {
+            LogManager manager = FindObjectOfType<LogManager>();
+            if (manager != null)
+            {
+                manager.RefreshLoggedObjects();
+            }
+        }
+    }
+#endif
 }

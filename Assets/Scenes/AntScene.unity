@@ -9087,6 +9087,10 @@ PrefabInstance:
       value: Sun
       objectReference: {fileID: 0}
     - target: {fileID: 8946680970368807917, guid: 94c79677565b739408b298a9674c3c64, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8946680970368807917, guid: 94c79677565b739408b298a9674c3c64, type: 3}
       propertyPath: logManager
       value: 
       objectReference: {fileID: 3906050202963111628}
@@ -25480,15 +25484,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d300d6076b9e66c4190bfa3dafc163e3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  loggedObjects: []
+  loggedObjects:
+  - {fileID: 1280383002}
+  - {fileID: 1635823588}
   objectAttributes: 21
-  cameraFrequency: 0
+  cameraFrequency: 2
   maximumCaptures: 0
   maximumEpisodes: 0
   maximumEntries: 0
   loggedCameras:
   - {fileID: 615413537}
   referenceObject: {fileID: 1635823588}
+  objectLogFrequency: 2
   entryCount: 0
   captureCount: 0
   currentEpisode: 0

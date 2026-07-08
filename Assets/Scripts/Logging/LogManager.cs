@@ -48,8 +48,9 @@ public class LogManager : MonoBehaviour
 
     public GameObject referenceObject;
 
-    // public int objectLogFrequency = 1;
-
+    [Header("[?] How frequently should Objects be Sampled? (in Frames)")]
+    [Tooltip("Record objects every number of frames. 0 = Driven by Agent. 1 = All frames. 2 = every other frame, etc.")]
+    public int objectLogFrequency = 0;
     StreamWriter logWriter;
     string objectPath;
     string framesPath;
@@ -74,8 +75,65 @@ public class LogManager : MonoBehaviour
 
     private void Awake()
     {
-        loggedObjects = new();
+        if (loggedObjects == null)
+        {
+            loggedObjects = new List<GameObject>();
+        }
         headerObjects = new();
+    }
+
+#if UNITY_EDITOR
+    public void RefreshLoggedObjects()
+    {
+        if (Application.isPlaying) return;
+
+        // Automatically collect LogMe objects in the scene at edit-time
+        LogMe[] loggers = FindObjectsOfType<LogMe>();
+        
+        if (loggedObjects == null)
+        {
+            loggedObjects = new List<GameObject>();
+        }
+        else
+        {
+            loggedObjects.Clear();
+        }
+
+        foreach (LogMe logger in loggers)
+        {
+            if (logger != null && logger.gameObject != null && logger.enabled)
+            {
+                // Only collect it if it's unassigned or assigned to this specific manager
+                if (logger.logManager == this || logger.logManager == null)
+                {
+                    if (!loggedObjects.Contains(logger.gameObject))
+                    {
+                        loggedObjects.Add(logger.gameObject);
+                    }
+                    
+                    if (logger.logManager == null)
+                    {
+                        logger.logManager = this;
+                        UnityEditor.EditorUtility.SetDirty(logger);
+                    }
+                }
+            }
+        }
+    }
+
+    private void OnValidate()
+    {
+        RefreshLoggedObjects();
+    }
+#endif
+
+    private void FixedUpdate()
+    {
+        if (objectLogFrequency > 0 && (Time.frameCount % objectLogFrequency == 0))
+        {
+            // Auto-increment the step if it's being driven automatically
+            AddEntry(currentEpisode, currentStep + 1);
+        }
     }
 
     void Start()
@@ -95,8 +153,19 @@ public class LogManager : MonoBehaviour
             /*cameraFrequency = ArgumentParser.Options.cameraFrequency;*/
 
             // Create Logging Directory
-            Directory.CreateDirectory(string.Format("{0}/Logs/{1}", Application.dataPath, runID));
-            logPath = string.Format("{0}/Logs/{1}", Application.dataPath, runID);
+            if (string.IsNullOrEmpty(logPath))
+            {
+                logPath = string.Format("{0}/Logs/{1}", Application.dataPath, runID);
+            }
+            else
+            {
+                // Ensure the path uses the runID if it doesn't already
+                if (!logPath.EndsWith(runID))
+                {
+                    logPath = string.Format("{0}/{1}", logPath.TrimEnd('/'), runID);
+                }
+            }
+            Directory.CreateDirectory(logPath);
 
             if (loggedObjects.Count > 0)
             {
@@ -182,9 +251,22 @@ public class LogManager : MonoBehaviour
         // Also include the metric in the objectAttribute enum so you can select it.
 
         string rowLog = string.Format("{0},{1},", episode, step);
-        foreach (GameObject obj in loggedObjects)
+        foreach (GameObject obj in headerObjects)
         {
-            if (obj is null || !headerObjects.Contains(obj)) { continue; }
+            LogMe logMe = obj != null ? obj.GetComponent<LogMe>() : null;
+            bool isLogging = obj != null && loggedObjects.Contains(obj) && obj.activeInHierarchy && (logMe == null || logMe.enabled);
+
+            if (!isLogging) 
+            { 
+                // Write empty commas to preserve CSV column alignment
+                if (objectAttributes.HasFlag(AttributeEnum.xPosition)) rowLog += ",";
+                if (objectAttributes.HasFlag(AttributeEnum.yPosition)) rowLog += ",";
+                if (objectAttributes.HasFlag(AttributeEnum.zPosition)) rowLog += ",";
+                if (objectAttributes.HasFlag(AttributeEnum.xAngle)) rowLog += ",";
+                if (objectAttributes.HasFlag(AttributeEnum.yAngle)) rowLog += ",";
+                if (objectAttributes.HasFlag(AttributeEnum.zAngle)) rowLog += ",";
+                continue; 
+            }
 
             if (objectAttributes.HasFlag(AttributeEnum.xPosition))
             {

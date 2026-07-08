@@ -4938,7 +4938,7 @@ GameObject:
   - component: {fileID: 1266092719490319492}
   - component: {fileID: 5572839275721792695}
   m_Layer: 0
-  m_Name: '{PerspectiveCamera}'
+  m_Name: PerspectiveCamera
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
