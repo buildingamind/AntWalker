@@ -155,7 +155,8 @@ public class LogManager : MonoBehaviour
             // Create Logging Directory
             if (string.IsNullOrEmpty(logPath))
             {
-                logPath = string.Format("{0}/Logs/{1}", Application.dataPath, runID);
+                // Place the Logs folder outside of the Assets directory to prevent Unity from generating .meta files
+                logPath = string.Format("{0}/../Logs/{1}", Application.dataPath, runID);
             }
             else
             {
