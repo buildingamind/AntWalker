@@ -358,13 +358,19 @@ public class LogManager : MonoBehaviour
         if (cam.targetTexture != null)
         {
             RenderTexture currentRT = RenderTexture.active;
-            RenderTexture.active = cam.targetTexture;
-
             cam.Render();
-            Texture2D Image = new Texture2D(cam.targetTexture.width, cam.targetTexture.height);
-            Image.ReadPixels(new Rect(0, 0, cam.targetTexture.width, cam.targetTexture.height), 0, 0);
+
+            // Create a temporary sRGB render texture to ensure gamma correction (Linear to sRGB)
+            RenderTexture tempRT = RenderTexture.GetTemporary(cam.targetTexture.width, cam.targetTexture.height, 0, RenderTextureFormat.Default, RenderTextureReadWrite.sRGB);
+            Graphics.Blit(cam.targetTexture, tempRT);
+
+            RenderTexture.active = tempRT;
+            Texture2D Image = new Texture2D(tempRT.width, tempRT.height, TextureFormat.RGB24, false);
+            Image.ReadPixels(new Rect(0, 0, tempRT.width, tempRT.height), 0, 0);
             Image.Apply();
+            
             RenderTexture.active = currentRT;
+            RenderTexture.ReleaseTemporary(tempRT);
 
             var Bytes = Image.EncodeToPNG();
             Destroy(Image);
