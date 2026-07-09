@@ -2486,7 +2486,7 @@ GameObject:
   - component: {fileID: 551113459}
   - component: {fileID: 551113460}
   m_Layer: 0
-  m_Name: '{SkyCamera}'
+  m_Name: SkyCamera
   m_TagString: MainCamera
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -8338,7 +8338,7 @@ GameObject:
   - component: {fileID: 1752344441}
   - component: {fileID: 1752344445}
   m_Layer: 0
-  m_Name: '{MapCamera}'
+  m_Name: MapCamera
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
